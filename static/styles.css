@@ -1,0 +1,82 @@
+/* Basic styling for the app with a blue theme and background image */
+
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', sans-serif;
+    color: #fff;
+}
+
+body {
+    background: url("/static/images/back.jpg") no-repeat center center fixed;
+    background-size: cover;
+    background-attachment: fixed;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+}
+
+.container {
+    flex: 1;
+    padding: 40px;
+    background-color: rgba(0, 0, 80, 0.7);
+    margin: 40px auto;
+    width: 80%;
+    border-radius: 15px;
+    box-shadow: 0 0 15px #000;
+    min-height: 60vh;
+}
+
+h1, h2 {
+    color: #cce6ff;
+    margin-bottom: 30px;
+}
+
+.book-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+}
+
+.book-card {
+    background-color: #003366;
+    border-radius: 10px;
+    padding: 20px;
+    width: 200px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
+
+.actions a {
+    display: block;
+    margin: 8px 0;
+    color: #99ccff;
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
+.actions a:hover {
+    color: #ffffff;
+}
+
+.ai-generator-info {
+    background-color: rgba(0, 0, 60, 0.6);
+    border: 1px dashed #66aaff;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.back-link {
+    color: #99ccff;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1.1em;
+    transition: color 0.3s ease;
+}
+
+.back-link:hover {
+    color: #ffffff;
+}

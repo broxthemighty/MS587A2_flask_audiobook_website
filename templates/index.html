@@ -1,0 +1,41 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI eBook & Audiobook Library</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>📘 AI eBook & Audiobook Library</h1>
+
+        <!-- Disabled AI generation link with clear explanation -->
+        <div class="ai-generator-info">
+            <p>
+                🔄 <strong>Generate New eBooks with AI</strong> – 
+                <em>(currently disabled due to API quota limits)</em>
+            </p>
+            <p style="font-size: 0.9em; opacity: 0.8;">
+                This feature uses GPT-3.5 to auto-generate short stories directly from the browser. 
+                Once quota is restored, it can be re-enabled.
+            </p>
+        </div>
+
+        <hr>
+
+        <div class="book-list">
+            {% for book in ebooks %}
+            <div class="book-card">
+                <h3>{{ book.replace('.txt', '') }}</h3>
+                <div class="actions">
+                    <a href="{{ url_for('read', filename=book) }}">📖 Read</a>
+                    <a href="{{ url_for('audio', filename=book) }}">🔊 Listen</a>
+                    <a href="{{ url_for('download', filename=book) }}">⬇ Download</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
