@@ -10,16 +10,13 @@
     <div class="container">
         <h1>📘 AI eBook & Audiobook Library</h1>
 
-        <!-- Disabled AI generation link with clear explanation -->
+        <!-- Functional AI story generator -->
         <div class="ai-generator-info">
-            <p>
-                🔄 <strong>Generate New eBooks with AI</strong> – 
-                <em>(currently disabled due to API quota limits)</em>
-            </p>
-            <p style="font-size: 0.9em; opacity: 0.8;">
-                This feature uses GPT-3.5 to auto-generate short stories directly from the browser. 
-                Once quota is restored, it can be re-enabled.
-            </p>
+            <form action="{{ url_for('generate') }}" method="POST">
+                <label for="theme"><strong>New Story Theme:</strong></label>
+                <input type="text" name="theme" id="theme" placeholder="e.g. Desert Heist" required>
+                <button type="submit">✍️ Generate New Story</button>
+            </form>
         </div>
 
         <hr>

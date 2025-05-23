@@ -1,37 +1,43 @@
 # ========================================
 # AI eBook Generator using Gemini Pro API
-# Google SDK v0.8.5+
+# Refactored for robustness and modularity
 # ========================================
 
 import os
-import google.generativeai as genai
+import logging
 from dotenv import load_dotenv
+import google.generativeai as genai
 
-# Load your Gemini API key from .env
+# Setup logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+
+# Load environment variables
 load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-# Configure the Gemini API client
-genai.configure(api_key=GEMINI_API_KEY)
+if not GEMINI_API_KEY:
+    raise EnvironmentError("GEMINI_API_KEY not found in environment.")
 
-# Use the Gemini Pro model (v0.8.5+ supports it)
+# Configure Gemini API client
+genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel("gemini-1.5-flash")
 
-# Story themes
-themes = [
+# Constants
+THEMES = [
     "Space Adventure",
     "Jungle Mystery",
     "Ancient Egypt",
     "Robot Rebellion",
     "Underwater City"
 ]
-
-# Output directory
 OUTPUT_DIR = "ebooks"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-# Unique filename generator
+
 def generate_unique_filename(base: str, extension: str, directory: str) -> str:
+    """
+    Generates a unique filename in the target directory to avoid overwrites.
+    """
     counter = 0
     candidate = f"{base}.{extension}"
     while os.path.exists(os.path.join(directory, candidate)):
@@ -39,29 +45,46 @@ def generate_unique_filename(base: str, extension: str, directory: str) -> str:
         candidate = f"{base}_{counter}.{extension}"
     return candidate
 
-# Prompt builder
+
 def build_prompt(theme: str) -> str:
+    """
+    Constructs a prompt string for Gemini content generation.
+    """
     return f"Write a creative short story (~500 words) titled '{theme}'. It should be imaginative and suitable for general audiences."
 
-# Story generation loop
-for i, theme in enumerate(themes, start=1):
+
+def generate_story(theme: str, index: int) -> str:
+    """
+    Handles the story generation and file writing for a given theme.
+    """
+    logging.info(f"[{index}] Generating story for theme: '{theme}'")
+    prompt = build_prompt(theme)
+
     try:
-        print(f"[{i}] Generating: {theme}...")
-        prompt = build_prompt(theme)
-
-        # Gemini Pro content generation
         response = model.generate_content(prompt)
-
         story = response.text.strip()
-        base_filename = f"book{i}_{theme.replace(' ', '_').lower()}"
+
+        base_filename = f"book{index}_{theme.replace(' ', '_').lower()}"
         final_filename = generate_unique_filename(base_filename, "txt", OUTPUT_DIR)
+        filepath = os.path.join(OUTPUT_DIR, final_filename)
 
-        with open(os.path.join(OUTPUT_DIR, final_filename), "w", encoding="utf-8") as f:
-            f.write(story)
+        with open(filepath, "w", encoding="utf-8") as file:
+            file.write(story)
 
-        print(f"✅ Saved: {final_filename}")
+        logging.info(f"✅ Story saved: {final_filename}")
+        return final_filename
 
     except Exception as e:
-        print(f"❌ Error generating '{theme}': {e}")
+        logging.error(f"❌ Error generating story for '{theme}': {e}")
+        return ""
 
-print(f"\n📚 Done. Stories saved to '{OUTPUT_DIR}/'")
+
+def main():
+    logging.info("📘 Starting AI eBook generation...")
+    for i, theme in enumerate(THEMES, start=1):
+        generate_story(theme, i)
+    logging.info(f"📚 All stories generated in '{OUTPUT_DIR}/'")
+
+
+if __name__ == "__main__":
+    main()
