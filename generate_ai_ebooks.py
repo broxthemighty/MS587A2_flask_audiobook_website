@@ -1,24 +1,23 @@
-# ================================================
-# AI eBook Generator Script using OpenAI's GPT API
-# Author: Refactored for real-world dev practices
-# ================================================
+# ========================================
+# AI eBook Generator using Gemini Pro API
+# Google SDK v0.8.5+
+# ========================================
 
 import os
-from openai import OpenAI, OpenAIError
+import google.generativeai as genai
 from dotenv import load_dotenv
-from datetime import datetime
 
-# Load environment variables from .env file
+# Load your Gemini API key from .env
 load_dotenv()
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-# Initialize the OpenAI client using the modern SDK
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# Configure the Gemini API client
+genai.configure(api_key=GEMINI_API_KEY)
 
-# Directory where eBooks will be saved
-OUTPUT_DIR = "ebooks"
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+# Use the Gemini Pro model (v0.8.5+ supports it)
+model = genai.GenerativeModel("gemini-1.5-flash")
 
-# Short story themes — you can expand this list easily
+# Story themes
 themes = [
     "Space Adventure",
     "Jungle Mystery",
@@ -27,46 +26,42 @@ themes = [
     "Underwater City"
 ]
 
-# Prompt template to use for generation
+# Output directory
+OUTPUT_DIR = "ebooks"
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+# Unique filename generator
+def generate_unique_filename(base: str, extension: str, directory: str) -> str:
+    counter = 0
+    candidate = f"{base}.{extension}"
+    while os.path.exists(os.path.join(directory, candidate)):
+        counter += 1
+        candidate = f"{base}_{counter}.{extension}"
+    return candidate
+
+# Prompt builder
 def build_prompt(theme: str) -> str:
-    """
-    Constructs the prompt for GPT based on the desired theme.
-    """
-    return f"Write a creative short story (~500 words) titled '{theme}'. Make it engaging and suitable for a general audience."
+    return f"Write a creative short story (~500 words) titled '{theme}'. It should be imaginative and suitable for general audiences."
 
-# Generate and save the stories
-for idx, theme in enumerate(themes, start=1):
+# Story generation loop
+for i, theme in enumerate(themes, start=1):
     try:
-        print(f"[{idx}] Generating story: '{theme}'...")
+        print(f"[{i}] Generating: {theme}...")
+        prompt = build_prompt(theme)
 
-        # Send chat-style message to GPT-3.5
-        response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "You are a creative fiction writer."},
-                {"role": "user", "content": build_prompt(theme)}
-            ]
-        )
+        # Gemini Pro content generation
+        response = model.generate_content(prompt)
 
-        # Extract the story text from the first response choice
-        story = response.choices[0].message.content.strip()
+        story = response.text.strip()
+        base_filename = f"book{i}_{theme.replace(' ', '_').lower()}"
+        final_filename = generate_unique_filename(base_filename, "txt", OUTPUT_DIR)
 
-        # Generate a safe filename
-        filename = f"book{idx}_{theme.replace(' ', '_').lower()}.txt"
-        path = os.path.join(OUTPUT_DIR, filename)
+        with open(os.path.join(OUTPUT_DIR, final_filename), "w", encoding="utf-8") as f:
+            f.write(story)
 
-        # Save the story to a .txt file
-        with open(path, "w", encoding="utf-8") as file:
-            file.write(story)
-
-        print(f"✅ Saved: {path}")
-
-    except OpenAIError as e:
-        # Handle API quota, rate limit, or key errors
-        print(f"❌ Failed to generate '{theme}': {str(e)}")
+        print(f"✅ Saved: {final_filename}")
 
     except Exception as e:
-        # Catch-all for I/O or unexpected issues
-        print(f"🚨 Unexpected error: {str(e)}")
+        print(f"❌ Error generating '{theme}': {e}")
 
-print(f"\n📚 Done generating {len(themes)} stories. Files are in: {OUTPUT_DIR}/")
+print(f"\n📚 Done. Stories saved to '{OUTPUT_DIR}/'")
